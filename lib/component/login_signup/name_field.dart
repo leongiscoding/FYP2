@@ -18,8 +18,8 @@ class _NameFieldState extends State<NameField> {
       controller: widget.controller,
       decoration: InputDecoration(
         border: OutlineInputBorder(),
-        labelText: "Name",
-        hintText: "Type Your Name Here",
+        labelText: "Email",
+        hintText: "Ex: yourname@example.com",
       ),
     );
   }

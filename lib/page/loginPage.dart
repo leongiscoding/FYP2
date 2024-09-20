@@ -16,6 +16,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+
+  //VALIDATE ACTION, SEARCHING FROM FIREBASE AUTH
   void _signIn() async{
     String name = _nameController.text;
     String password = _passwordController.text;
@@ -36,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
           }
       );
     }else{
-      //Do action that save to database
+      //CHECK THAT WHETHER USER INPUT HAS FOUNDED IN DATABASE
 
       //then navigate to next page
       Navigator.pushNamed(context, "/mainPage");
@@ -52,14 +54,14 @@ class _LoginPageState extends State<LoginPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             //LOGO
-            LogoWidget(),
+            const LogoWidget(),
             SizedBox(height: 40,),
 
             //TITLE
-            Text(
+            const Text(
                 "EzScan",
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                 ),
             ),
@@ -69,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
            NameField(controller: _nameController),
             SizedBox(height: 20,),
 
-            //PASSWORD FIELD
+            //PASSWORD INPUT
             PasswordField(
                 controller: _passwordController
             ),
@@ -87,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 30,),
 
             //Sign up link
-            SignUpLink(),
+            const SignUpLink(),
           ],
         ),
       ),
