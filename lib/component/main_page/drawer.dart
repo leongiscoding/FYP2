@@ -22,14 +22,20 @@ class MyDrawer extends StatelessWidget {
           DrawerTile(
               title: "Profile",
               leading: const Icon(Icons.person),
-              onTap: (){},
+              onTap: (){
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/profilePage");
+              },
           ),
 
           //LOG OUT NAVIGATOR
           DrawerTile(
               title: "Log Out",
               leading: const Icon(Icons.logout),
-              onTap: (){},
+              onTap: (){
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/loginPage");
+              },
           ),
         ],
       ),
