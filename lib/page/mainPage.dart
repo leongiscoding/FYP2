@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -12,23 +13,26 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        foregroundColor: Colors.black,
-        title: const Text(
-          "EzScan",
-          style: TextStyle(
-            fontSize: 18,
-          ),
-        ),
         centerTitle: true,
         elevation: 0,
+        foregroundColor: Theme.of(context).colorScheme.secondary,
         backgroundColor: Colors.transparent,
+        title:  Text(
+          "EzScan",
+          style: GoogleFonts.dmSerifText(
+            textStyle: TextStyle(
+              color: Theme.of(context).colorScheme.secondary
+            ),
+          ),
+        ),
       ),
       drawer: const MyDrawer(),
 
       body: Stack(
-        //DUMMY DATA
-        children: <Widget>[
+        children: [
+          //DUMMY DATA
           Positioned.fill(
               child: ListView(
                 children: [
@@ -58,18 +62,21 @@ class _MainPageState extends State<MainPage> {
           Positioned(
             bottom: 0, left: 0, right: 0,
               child: Container(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 padding: EdgeInsets.all(10.0),
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     elevation: 4,
                     padding: EdgeInsets.all(10.0),
-                    backgroundColor: Colors.grey.shade300,
-                    foregroundColor: Colors.black
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
                   //PERFORM USER UPLOAD IMAGE, AND ESTIMATE CALORIE BY TRAINED MODEL
                   onPressed: (){},
-                  child: Text("Estimate Calorie"),
+                  child: Text(
+                      "Estimate Calorie",
+                      style: GoogleFonts.dmSerifText(fontSize: 16),
+                  ),
                 ),
               ),
           ),

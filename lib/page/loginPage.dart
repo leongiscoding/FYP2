@@ -3,7 +3,7 @@ import 'package:fyp2/component/login_signup/logo_widget.dart';
 import 'package:fyp2/component/login_signup/name_field.dart';
 import 'package:fyp2/component/login_signup/password_field.dart';
 import 'package:fyp2/component/login_signup/sign_up_link.dart';
-
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body:  Padding(
         padding:  EdgeInsets.symmetric(horizontal: 32.0),
         child: Column(
@@ -58,11 +59,13 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 40,),
 
             //TITLE
-            const Text(
-                "EzScan",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+             Text(
+                "Welcome to EzScan",
+                style: GoogleFonts.dmSerifText(
+                  textStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary,
+                    fontSize: 23,
+                  ),
                 ),
             ),
             SizedBox(height: 40,),
@@ -81,10 +84,18 @@ class _LoginPageState extends State<LoginPage> {
             ElevatedButton(
                 onPressed: _signIn,
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   padding: EdgeInsets.symmetric(vertical: 16.0,horizontal: 32.0),
-                  textStyle: TextStyle(fontSize: 18)
                 ),
-                child: Text("Sign In"),
+                child: Text(
+                  "Sign In",
+                  style: GoogleFonts.dmSerifText(
+                    textStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
             ),
             SizedBox(height: 30,),
 

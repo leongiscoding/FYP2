@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SignUpLink extends StatelessWidget {
   const SignUpLink({super.key});
@@ -11,12 +12,14 @@ class SignUpLink extends StatelessWidget {
         Navigator.pushNamed(context, "/signUpPage");
       },
       child: RichText(
-        text: const TextSpan(
+        text:  TextSpan(
           text: "Don't have an Account? ",
-          style: TextStyle(
-            color: Colors.black,
+          style: GoogleFonts.dmSerifText(
+            textStyle: TextStyle(
+              color: Theme.of(context).colorScheme.secondary,
+            ),
           ),
-          children: [
+          children: const [
             TextSpan(
               text: "Click here to Sign Up",
               style: TextStyle(

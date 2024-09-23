@@ -3,6 +3,7 @@ import 'package:fyp2/page/loginPage.dart';
 import 'package:fyp2/page/mainPage.dart';
 import 'package:fyp2/page/profilePage.dart';
 import 'package:fyp2/page/signUpPage.dart';
+import 'package:fyp2/theme/theme.dart';
 
 void main() async{
   runApp(
@@ -17,10 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return  MaterialApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: false,
-      ),
+      theme: themeData,
       home: const LoginPage(),
       debugShowCheckedModeBanner: false,
       routes: {

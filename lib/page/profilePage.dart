@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/profile_page/bmi_field.dart';
 import 'package:fyp2/controller/bmi_calculator.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -37,23 +38,32 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.black,
-        title: const Text(
+        title:  Text(
             "Profile",
-          style: TextStyle(fontSize: 18),
+          style: GoogleFonts.dmSerifText(
+            color: Theme.of(context).colorScheme.secondary,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
+
       body:  Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             //DUMMY NAME, THIS SHOULD REFER TO FIREBASE AUTH DATA
             Padding(
               padding: const EdgeInsets.only(left: 10.0),
-              child: Text("Name : Bob",style: TextStyle(fontSize: 30),),
+              child: Text(
+                "Name : Bob",
+                style: GoogleFonts.dmSerifText(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
             ),
 
             //BMI FIELD FOR HEIGHT AND WEIGHT
@@ -77,14 +87,32 @@ class _ProfilePageState extends State<ProfilePage> {
                 //CALCULATE BMI
                 ElevatedButton(
                     onPressed: calculateAndShowBMI,
-                    child: const Text("Calculate BMI"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    ),
+                    child: Text(
+                        "Calculate BMI",
+                      style: GoogleFonts.dmSerifText(
+                        fontSize: 14,
+                      ),
+                    ),
                 ),
 
                 //SAVE TO DB
                 ElevatedButton(
                   //THIS SHOULD SAVE bmi AND bmiCategory
                   onPressed: (){},
-                  child: const Text("Save"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
+                  ),
+                  child: Text(
+                      "Save",
+                    style: GoogleFonts.dmSerifText(
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -98,11 +126,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Text(
                     "BMI: ${bmi.toStringAsFixed(1)}",
-                    style: const TextStyle(fontSize: 18),
+                    style:  GoogleFonts.dmSerifText(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                   Text(
                     bmiCategory,
-                    style: const TextStyle(fontSize: 18,color: Colors.black),
+                    style:  GoogleFonts.dmSerifText(
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
                 ],
               ),
