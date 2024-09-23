@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fyp2/component/login_signup/logo_widget.dart';
 import 'package:fyp2/component/login_signup/name_field.dart';
 import 'package:fyp2/component/login_signup/password_field.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -31,11 +32,13 @@ class _SignUpPageState extends State<SignUpPage> {
             SizedBox(height: 40,),
 
             //TITLE
-            const Text(
+             Text(
               "Create Account for EzScan",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.dmSerifText(
+                textStyle: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontSize: 23,
+                ),
               ),
             ),
             SizedBox(height: 40,),
@@ -53,9 +56,17 @@ class _SignUpPageState extends State<SignUpPage> {
                 onPressed:_signUp,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.0,horizontal: 32.0),
-                  textStyle: TextStyle(fontSize: 18),
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                 ),
-                child: Text("Create Account"),
+                child: Text(
+                    "Create Account",
+                    style: GoogleFonts.dmSerifText(
+                      textStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.inversePrimary,
+                        fontSize: 17,
+                      ),
+                    ),
+                ),
             ),
             SizedBox(height: 30,),
           ],
