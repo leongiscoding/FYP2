@@ -12,7 +12,15 @@ class MyDrawer extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.primary,
       child: Column(
         children: [
-          const DrawerHeader(
+           DrawerHeader(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.inversePrimary,
+                  width: 1,
+                ),
+              ),
+            ),
             child: LogoWidget(),
           ),
           Padding(
