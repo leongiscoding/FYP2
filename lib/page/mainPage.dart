@@ -1,6 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
+import 'package:fyp2/controller/model_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -10,6 +14,87 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  final CalorieEstimator _estimator = CalorieEstimator();
+  final List<FruitResult> _results = [];
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _initializeEstimator();
+  }
+
+  Future<void> _initializeEstimator() async {
+    try {
+      await _estimator.initializeModel();
+      print('CalorieEstimator initialized successfully.');
+    } catch (e) {
+      print('Error initializing CalorieEstimator: $e');
+    }
+  }
+
+
+  //Function to pick and process image
+  Future<void> _processImage() async {
+    final ImagePicker picker = ImagePicker();
+
+    try {
+      setState(() => _isProcessing = true);
+
+      // Pick image
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) {
+        _showMessage('No image selected');
+        return;
+      }
+
+      final File imageFile = File(image.path);
+
+      // Process image with the model
+      final result = await _estimator.predict(imageFile);
+
+      if (result != null && result['fruitName'] != null) {
+        // Save image to app directory for persistence
+        final Directory appDir = await getApplicationCacheDirectory();
+        final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final File localImage = await imageFile.copy('${appDir.path}/$fileName');
+
+        setState(() {
+          _results.insert(
+            0,
+            FruitResult(
+              imagePath: localImage.path,
+              fruitName: result['fruitName'] ?? 'Unknown Fruit',
+              calories: result['calories'] ?? 'Unknown kcal',
+            ),
+          );
+        });
+      } else {
+        _showMessage('Fruit not recognized. Please try again with a different image');
+      }
+    } catch (e) {
+      _showMessage('Error processing image: $e');
+      print('Detailed error: $e');
+    } finally {
+      setState(() => _isProcessing = false);
+    }
+  }
+
+
+
+  void _showMessage(String message){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message))
+    );
+  }
+
+  @override
+  void dispose(){
+    _estimator.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,33 +117,51 @@ class _MainPageState extends State<MainPage> {
 
       body: Stack(
         children: [
-          //DUMMY DATA
+          //R E S U L T   L I S T   V I E W
           Positioned.fill(
-              child: ListView(
-                children: [
-                  ListTile(title: Text("Item 1")),
-                  ListTile(title: Text("Item 2")),
-                  ListTile(title: Text("Item 3")),
-                  ListTile(title: Text("Item 4")),
-                  ListTile(title: Text("Item 5")),
-                  ListTile(title: Text("Item 6")),
-                  ListTile(title: Text("Item 7")),
-                  ListTile(title: Text("Item 8")),
-                  ListTile(title: Text("Item 9")),
-                  ListTile(title: Text("Item 10")),
-                  ListTile(title: Text("Item 11")),
-                  ListTile(title: Text("Item 12")),
-                  ListTile(title: Text("Item 13")),
-                  ListTile(title: Text("Item 14")),
-                  ListTile(title: Text("Item 15")),
-                  ListTile(title: Text("Item 16")),
-                  ListTile(title: Text("Item 17")),
-                  ListTile(title: Text("Item 18")),
-                ],
+              child: _results.isEmpty
+                  ? Center(
+                child: Text(
+                  'No scanned fruits yet\nTap "Estimate Calorie" to begin',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.6),
+                  ),
+                ),
+              )
+                  : ListView.builder(
+                itemCount: _results.length,
+                  itemBuilder: (context,index){
+                  final result = _results[index];
+                  return Card(
+                    margin: EdgeInsets.all(8),
+                    child: ListTile(
+                      leading: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(result.imagePath),
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      title: Text(
+                        result.fruitName,
+                        style: GoogleFonts.dmSerifText(),
+                      ),
+                      subtitle: Text(
+                        result.calories,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
+                      ),
+                    ),
+                  );
+                  }
               ),
           ),
 
-          //Fixed button at bottom
+          //F I X E D    B U T T O N
           Positioned(
             bottom: 0, left: 0, right: 0,
               child: Container(
@@ -72,7 +175,7 @@ class _MainPageState extends State<MainPage> {
                     foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
                   //PERFORM USER UPLOAD IMAGE, AND ESTIMATE CALORIE BY TRAINED MODEL
-                  onPressed: (){},
+                  onPressed: _isProcessing ? null : _processImage,
                   child: Text(
                       "Estimate Calorie",
                       style: GoogleFonts.dmSerifText(fontSize: 16),
@@ -85,4 +188,16 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
+}
+
+class FruitResult{
+  final String imagePath;
+  final String fruitName;
+  final String calories;
+
+  FruitResult({
+    required this.imagePath,
+    required this.fruitName,
+    required this.calories
+});
 }
