@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
-import 'package:fyp2/controller/model_service.dart';
+import 'package:fyp2/page/resultPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as img;
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+import '../ml/calorie_estimator.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -14,88 +18,62 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final CalorieEstimator _estimator = CalorieEstimator();
-  final List<FruitResult> _results = [];
-  bool _isProcessing = false;
+  late ModelService _modelService;
+  bool _isLoading = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _initializeEstimator();
+    _modelService = ModelService();
+    _loadModel();
   }
 
-  Future<void> _initializeEstimator() async {
+  Future<void> _loadModel() async {
     try {
-      await _estimator.initializeModel();
-      print('CalorieEstimator initialized successfully.');
+      await _modelService.loadModel();
+      print('Model loaded successfully');
     } catch (e) {
-      print('Error initializing CalorieEstimator: $e');
+      print('Error loading model: $e');
     }
   }
 
-
-  //Function to pick and process image
-  Future<void> _processImage() async {
-    final ImagePicker picker = ImagePicker();
+  Future<void> _pickImage() async {
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      setState(() => _isProcessing = true);
-
-      // Pick image
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-      if (image == null) {
-        _showMessage('No image selected');
-        return;
-      }
-
-      final File imageFile = File(image.path);
-
-      // Process image with the model
-      final result = await _estimator.predict(imageFile);
-
-      if (result != null && result['fruitName'] != null) {
-        // Save image to app directory for persistence
-        final Directory appDir = await getApplicationCacheDirectory();
-        final String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final File localImage = await imageFile.copy('${appDir.path}/$fileName');
-
-        setState(() {
-          _results.insert(
-            0,
-            FruitResult(
-              imagePath: localImage.path,
-              fruitName: result['fruitName'] ?? 'Unknown Fruit',
-              calories: result['calories'] ?? 'Unknown kcal',
+      final result = await _modelService.pickImage();
+      if (result != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultPage(
+              imagePath: result['imagePath'],
+              fruitName: result['predictedLabel'],
+              calories: result['calories'],
             ),
-          );
-        });
-      } else {
-        _showMessage('Fruit not recognized. Please try again with a different image');
+          ),
+        );
       }
     } catch (e) {
-      _showMessage('Error processing image: $e');
-      print('Detailed error: $e');
+      print('Error processing image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error processing image. Please try again.')),
+      );
     } finally {
-      setState(() => _isProcessing = false);
+      setState(() {
+        _isLoading = false;
+      });
     }
-  }
-
-
-
-  void _showMessage(String message){
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message))
-    );
   }
 
   @override
-  void dispose(){
-    _estimator.close();
+  void dispose() {
+    _modelService.dispose();
     super.dispose();
   }
-
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -118,48 +96,6 @@ class _MainPageState extends State<MainPage> {
       body: Stack(
         children: [
           //R E S U L T   L I S T   V I E W
-          Positioned.fill(
-              child: _results.isEmpty
-                  ? Center(
-                child: Text(
-                  'No scanned fruits yet\nTap "Estimate Calorie" to begin',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.6),
-                  ),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: _results.length,
-                  itemBuilder: (context,index){
-                  final result = _results[index];
-                  return Card(
-                    margin: EdgeInsets.all(8),
-                    child: ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(result.imagePath),
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      title: Text(
-                        result.fruitName,
-                        style: GoogleFonts.dmSerifText(),
-                      ),
-                      subtitle: Text(
-                        result.calories,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ),
-                  );
-                  }
-              ),
-          ),
 
           //F I X E D    B U T T O N
           Positioned(
@@ -175,7 +111,7 @@ class _MainPageState extends State<MainPage> {
                     foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
                   //PERFORM USER UPLOAD IMAGE, AND ESTIMATE CALORIE BY TRAINED MODEL
-                  onPressed: _isProcessing ? null : _processImage,
+                  onPressed: _pickImage,
                   child: Text(
                       "Estimate Calorie",
                       style: GoogleFonts.dmSerifText(fontSize: 16),
@@ -188,16 +124,4 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
-}
-
-class FruitResult{
-  final String imagePath;
-  final String fruitName;
-  final String calories;
-
-  FruitResult({
-    required this.imagePath,
-    required this.fruitName,
-    required this.calories
-});
 }
