@@ -1,6 +1,14 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
+import 'package:fyp2/page/resultPage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+import '../ml/calorie_estimator.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -10,7 +18,62 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  late ModelService _modelService;
+  bool _isLoading = false;
+
   @override
+  void initState() {
+    super.initState();
+    _modelService = ModelService();
+    _loadModel();
+  }
+
+  Future<void> _loadModel() async {
+    try {
+      await _modelService.loadModel();
+      print('Model loaded successfully');
+    } catch (e) {
+      print('Error loading model: $e');
+    }
+  }
+
+  Future<void> _pickImage() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final result = await _modelService.pickImage();
+      if (result != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultPage(
+              imagePath: result['imagePath'],
+              fruitName: result['predictedLabel'],
+              calories: result['calories'],
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error processing image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error processing image. Please try again.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _modelService.dispose();
+    super.dispose();
+  }
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -32,33 +95,9 @@ class _MainPageState extends State<MainPage> {
 
       body: Stack(
         children: [
-          //DUMMY DATA
-          Positioned.fill(
-              child: ListView(
-                children: [
-                  ListTile(title: Text("Item 1")),
-                  ListTile(title: Text("Item 2")),
-                  ListTile(title: Text("Item 3")),
-                  ListTile(title: Text("Item 4")),
-                  ListTile(title: Text("Item 5")),
-                  ListTile(title: Text("Item 6")),
-                  ListTile(title: Text("Item 7")),
-                  ListTile(title: Text("Item 8")),
-                  ListTile(title: Text("Item 9")),
-                  ListTile(title: Text("Item 10")),
-                  ListTile(title: Text("Item 11")),
-                  ListTile(title: Text("Item 12")),
-                  ListTile(title: Text("Item 13")),
-                  ListTile(title: Text("Item 14")),
-                  ListTile(title: Text("Item 15")),
-                  ListTile(title: Text("Item 16")),
-                  ListTile(title: Text("Item 17")),
-                  ListTile(title: Text("Item 18")),
-                ],
-              ),
-          ),
+          //R E S U L T   L I S T   V I E W
 
-          //Fixed button at bottom
+          //F I X E D    B U T T O N
           Positioned(
             bottom: 0, left: 0, right: 0,
               child: Container(
@@ -72,7 +111,7 @@ class _MainPageState extends State<MainPage> {
                     foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
                   //PERFORM USER UPLOAD IMAGE, AND ESTIMATE CALORIE BY TRAINED MODEL
-                  onPressed: (){},
+                  onPressed: _pickImage,
                   child: Text(
                       "Estimate Calorie",
                       style: GoogleFonts.dmSerifText(fontSize: 16),

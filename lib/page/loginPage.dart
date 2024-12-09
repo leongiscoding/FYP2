@@ -13,13 +13,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
 
   //VALIDATE ACTION, SEARCHING FROM FIREBASE AUTH
   void _signIn() async{
-    String name = _nameController.text;
+    String name = _emailController.text;
     String password = _passwordController.text;
     if(name.isEmpty || password.isEmpty){
       showDialog(
@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 40,),
 
             //NAME INPUT
-           NameField(controller: _nameController),
+           NameField(controller: _emailController),
             SizedBox(height: 20,),
 
             //PASSWORD INPUT
