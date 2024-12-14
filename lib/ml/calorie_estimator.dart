@@ -77,9 +77,9 @@ class ModelService {
       for (int y = 0; y < 32; y++) {
         for (int x = 0; x < 32; x++) {
           final pixel = resizedImage.getPixel(x, y);
-          imageAsList[index++] = (img.getRed(pixel) / 255.0);
-          imageAsList[index++] = (img.getGreen(pixel) / 255.0);
-          imageAsList[index++] = (img.getBlue(pixel) / 255.0);
+          imageAsList[index++] = (img.getRed(pixel).toDouble());
+          imageAsList[index++] = (img.getGreen(pixel).toDouble());
+          imageAsList[index++] = (img.getBlue(pixel).toDouble());
         }
       }
 

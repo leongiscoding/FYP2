@@ -1,12 +1,8 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
 import 'package:fyp2/page/resultPage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
-import 'package:tflite_flutter/tflite_flutter.dart';
+
 
 import '../ml/calorie_estimator.dart';
 
