@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/profile_page/bmi_field.dart';
 import 'package:fyp2/controller/bmi_calculator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,12 +13,43 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  //Get current/registered username
+  User? user = FirebaseAuth.instance.currentUser;
+
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   double bmi = 0;
   String bmiCategory = "";
 
-  void calculateAndShowBMI(){
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadBMIFromSharedPreferences();
+  }
+
+  // Load BMI and Category from Shared Preferences
+  Future<void> loadBMIFromSharedPreferences() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      bmi = prefs.getDouble('bmi') ?? 0;
+      bmiCategory = prefs.getString('bmiCategory') ?? "No BMI Calculated";
+      heightController.text = prefs.getString('height') ?? '';
+      weightController.text = prefs.getString('weight') ?? '';
+    });
+  }
+
+  //Save BMI and Category to Shared Preferences
+  Future<void> saveBMIToSharedPreferences() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('bmi', bmi);
+    await prefs.setString('bmiCategory', bmiCategory);
+    await prefs.setString('height', heightController.text);
+    await prefs.setString('weight', weightController.text);
+  }
+
+  // call calculation from bmi_calculator.dart
+  Future<void> calculateAndShowBMI() async{
     double height = double.tryParse(heightController.text) ?? 0;
     double weight = double.tryParse(weightController.text) ?? 0;
 
@@ -25,13 +58,16 @@ class _ProfilePageState extends State<ProfilePage> {
         bmi = calculateBMI(height, weight);
         bmiCategory = getBMICategory(bmi);
       });
+      await saveBMIToSharedPreferences();
     }else{
       setState(() {
         bmi = 0;
         bmiCategory = "Invalid Input";
       });
+      await saveBMIToSharedPreferences();
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +90,25 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //DUMMY NAME, THIS SHOULD REFER TO FIREBASE AUTH DATA
+            //Username information
             Padding(
               padding: const EdgeInsets.only(left: 10.0),
               child: Text(
-                "Name : Bob",
+                // read username from firebase
+                "Name: ${user?.displayName ?? 'User unknown'}",
+                style: GoogleFonts.dmSerifText(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+            ),
+
+            //Email Information
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0),
+              child: Text(
+                //read email from firebase
+               "Email: ${FirebaseAuth.instance.currentUser!.email!.toString()}",
                 style: GoogleFonts.dmSerifText(
                   fontSize: 18,
                   color: Theme.of(context).colorScheme.secondary,
