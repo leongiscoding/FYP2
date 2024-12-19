@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyp2/component/login_signup/logo_widget.dart';
-import 'package:fyp2/component/login_signup/name_field.dart';
+import 'package:fyp2/component/login_signup/email_field.dart';
 import 'package:fyp2/component/login_signup/password_field.dart';
+import 'package:fyp2/component/login_signup/username_field.dart';
+import 'package:fyp2/firebase/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -14,10 +17,29 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
 
-  //PERFORM FIREBASE AUTH, CREATE AND SAVE ACCOUNT
-  void _signUp() async{}
+// VALIDATE ACTION, SEARCHING FROM FIREBASE AUTH
+  void _signUp() async{
+    String username = _usernameController.text;
+    String email = _emailController.text;
+    String password = _passwordController.text;
+    if(email.isEmpty || password.isEmpty || username.isEmpty){
+      String message = 'Invalid blank';
+      Fluttertoast.showToast(
+          msg: message,
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.SNACKBAR,
+          backgroundColor: Colors.black54,
+          textColor: Colors.white,
+          fontSize: 14.0
+      );
+    }else{
+      // CHECK THAT WHETHER USER INPUT IS VALID TO CREATE
+      await AuthService().signUp(username: _usernameController.text, email: _emailController.text, password: _passwordController.text, context: context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +65,12 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             SizedBox(height: 40,),
 
-            //NAME INPUT
-            NameField(controller: _emailController),
+            //USERNAME INPUT
+            UsernameField(controller: _usernameController),
+            SizedBox(height: 20,),
+
+            //EMAIL INPUT
+            EmailField(controller: _emailController),
             SizedBox(height: 20,),
 
             //PASSWORD INPUT
@@ -53,7 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
             //SIGNUP BUTTON
             ElevatedButton(
-                onPressed:_signUp,
+                onPressed: _signUp,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 16.0,horizontal: 32.0),
                   backgroundColor: Theme.of(context).colorScheme.primary,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:fyp2/component/login_signup/logo_widget.dart';
-import 'package:fyp2/component/login_signup/name_field.dart';
+import 'package:fyp2/component/login_signup/email_field.dart';
 import 'package:fyp2/component/login_signup/password_field.dart';
 import 'package:fyp2/component/login_signup/sign_up_link.dart';
+import 'package:fyp2/firebase/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,31 +19,23 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
 
-  //VALIDATE ACTION, SEARCHING FROM FIREBASE AUTH
+  // VALIDATE ACTION, SEARCHING FROM FIREBASE AUTH
   void _signIn() async{
     String name = _emailController.text;
     String password = _passwordController.text;
     if(name.isEmpty || password.isEmpty){
-      showDialog(
-          context: context,
-          builder: (context){
-            return AlertDialog(
-              title: Text("Error"),
-              content: Text("Please fill in both name and password"),
-              actions: [
-                TextButton(
-                    onPressed: ()=> Navigator.of(context).pop(),
-                    child: Text("OK"),
-                )
-              ],
-            );
-          }
+      String message = 'Invalid blank email or password';
+      Fluttertoast.showToast(
+          msg: message,
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.SNACKBAR,
+          backgroundColor: Colors.black54,
+          textColor: Colors.white,
+          fontSize: 14.0
       );
     }else{
-      //CHECK THAT WHETHER USER INPUT HAS FOUNDED IN DATABASE
-
-      //then navigate to next page
-      Navigator.pushNamed(context, "/mainPage");
+      // CHECK THAT WHETHER USER INPUT HAS FOUNDED IN DATABASE
+      await AuthService().signIn(email: _emailController.text, password: _passwordController.text, context: context);
     }
   }
 
@@ -71,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 40,),
 
             //NAME INPUT
-           NameField(controller: _emailController),
+           EmailField(controller: _emailController),
             SizedBox(height: 20,),
 
             //PASSWORD INPUT
