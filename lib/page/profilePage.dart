@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/profile_page/bmi_field.dart';
 import 'package:fyp2/controller/bmi_calculator.dart';
+import 'package:fyp2/firebase/firestore_service.dart';
+import 'package:fyp2/firebase/profile_firestore_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,7 +17,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   //Get current/registered username
   User? user = FirebaseAuth.instance.currentUser;
-
+  final ProfileFireStoreService _fireStoreService = ProfileFireStoreService();
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   double bmi = 0;
@@ -25,31 +27,38 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadBMIFromSharedPreferences();
+    loadBMIFromFireStore();
   }
 
   // Load BMI and Category from Shared Preferences
-  Future<void> loadBMIFromSharedPreferences() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      bmi = prefs.getDouble('bmi') ?? 0;
-      bmiCategory = prefs.getString('bmiCategory') ?? "No BMI Calculated";
-      heightController.text = prefs.getString('height') ?? '';
-      weightController.text = prefs.getString('weight') ?? '';
-    });
+  Future<void> loadBMIFromFireStore() async {
+    try {
+      final data = await _fireStoreService.loadBMIFromFireStore();
+      if (data != null) {
+        setState(() {
+          bmi = data['bmi'] ?? 0;
+          bmiCategory = data['bmiCategory'] ?? "No BMI Calculated";
+          heightController.text = data['height']?.toString() ?? '';
+          weightController.text = data['weight']?.toString() ?? '';
+        });
+      } else {
+        setState(() {
+          bmi = 0;
+          bmiCategory = "No Data Found";
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading BMI data: $e")),
+      );
+    }
   }
 
-  //Save BMI and Category to Shared Preferences
-  Future<void> saveBMIToSharedPreferences() async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('bmi', bmi);
-    await prefs.setString('bmiCategory', bmiCategory);
-    await prefs.setString('height', heightController.text);
-    await prefs.setString('weight', weightController.text);
-  }
+
+
 
   // call calculation from bmi_calculator.dart
-  Future<void> calculateAndShowBMI() async{
+  Future<void> saveBMIToFireStore() async{
     double height = double.tryParse(heightController.text) ?? 0;
     double weight = double.tryParse(weightController.text) ?? 0;
 
@@ -58,13 +67,23 @@ class _ProfilePageState extends State<ProfilePage> {
         bmi = calculateBMI(height, weight);
         bmiCategory = getBMICategory(bmi);
       });
-      await saveBMIToSharedPreferences();
+      await _fireStoreService.saveBMIToFireStore(
+          height: height,
+          weight: weight,
+          bmi: bmi,
+          bmiCategory: bmiCategory
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Saved Successfully"))
+      );
     }else{
       setState(() {
         bmi = 0;
         bmiCategory = "Invalid Input";
       });
-      await saveBMIToSharedPreferences();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to Save Data"))
+      );
     }
   }
 
@@ -134,35 +153,19 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                //CALCULATE BMI
+                //CALCULATE BMI and Save
                 ElevatedButton(
-                    onPressed: calculateAndShowBMI,
+                    onPressed: saveBMIToFireStore,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                     ),
                     child: Text(
-                        "Calculate BMI",
+                        "Calculate and Save BMI",
                       style: GoogleFonts.dmSerifText(
                         fontSize: 14,
                       ),
                     ),
-                ),
-
-                //SAVE TO DB
-                ElevatedButton(
-                  //THIS SHOULD SAVE bmi AND bmiCategory
-                  onPressed: (){},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  ),
-                  child: Text(
-                      "Save",
-                    style: GoogleFonts.dmSerifText(
-                      fontSize: 14,
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -175,14 +178,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "BMI: ${bmi.toStringAsFixed(1)}",
+                    "BMI: ${bmi > 0 ? bmi.toStringAsFixed(1): 'Not Calculated'}",
                     style:  GoogleFonts.dmSerifText(
                       fontSize: 18,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                   Text(
-                    bmiCategory,
+                    bmiCategory.isNotEmpty ? bmiCategory: 'No BMI Category',
                     style:  GoogleFonts.dmSerifText(
                       fontSize: 18,
                       color: Theme.of(context).colorScheme.secondary,

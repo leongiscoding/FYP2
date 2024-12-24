@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/main_page/drawer.dart';
+import 'package:fyp2/component/result_page/food_entry_list.dart';
+import 'package:fyp2/firebase/firestore_service.dart';
 import 'package:fyp2/page/resultPage.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -46,7 +49,7 @@ class _MainPageState extends State<MainPage> {
           MaterialPageRoute(
             builder: (context) => ResultPage(
               imagePath: result['imagePath'],
-              fruitName: result['predictedLabel'],
+              foodName: result['predictedLabel'],
               calories: result['calories'],
             ),
           ),
@@ -69,6 +72,28 @@ class _MainPageState extends State<MainPage> {
     _modelService.dispose();
     super.dispose();
   }
+
+  Future<void> _deleteFoodEntry(String entryId)async{
+    try{
+      final user = FirebaseAuth.instance.currentUser;
+      if(user == null)return;
+
+      await FireStoreService().deleteFoodEntry(user.uid, entryId);
+
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Food Information deleted successfully")),
+        );
+      }
+    }catch(e){
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Food Information deleted unsuccessfully: $e")),
+        );
+      }
+    }
+  }
+
  @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,6 +117,7 @@ class _MainPageState extends State<MainPage> {
       body: Stack(
         children: [
           //R E S U L T   L I S T   V I E W
+          FoodEntryList(onDelete: _deleteFoodEntry),
 
           //F I X E D    B U T T O N
           Positioned(
@@ -115,7 +141,6 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
           ),
-
         ],
       ),
     );
