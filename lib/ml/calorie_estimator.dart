@@ -10,7 +10,7 @@ class ModelService {
   // Load the TFLite model from assets
   Future<void> loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset('assets/model.tflite');
+      _interpreter = await Interpreter.fromAsset('assets/model_fruit_v2.tflite');
       print('Model load success');
     } catch (e) {
       print('Error loading model: $e');
@@ -33,7 +33,7 @@ class ModelService {
         var input = processedImage.buffer.asFloat32List().reshape([1, 32, 32, 3]);
 
         // Prepare output buffer for model output
-        var output = List.filled(1 * 3, 0.0).reshape([1, 3]);
+        var output = List.filled(1 * 6, 0.0).reshape([1, 6]);
 
         // Run inference
         _interpreter.run(input, output);
@@ -104,7 +104,7 @@ class ModelService {
   }
 
   String getLabel(int index) {
-    const labels = ['Apple', 'Banana', 'Orange']; // Add more fruits as needed
+    const labels = ['Apple', 'Banana','Carrot','Cucumber', 'Orange','Unknown']; // Add more fruits as needed
     return labels[index];
   }
 
@@ -112,7 +112,10 @@ class ModelService {
     final Map<String, String> calorieData = {
       'Apple': '95',
       'Banana': '105',
+      'Carrot': '41',
+      'Cucumber': '45',
       'Orange': '62',
+      'Unknown': '0',
     };
     return calorieData[fruitName] ?? 'Unknown';
   }
