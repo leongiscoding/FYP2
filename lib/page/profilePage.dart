@@ -74,7 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
           bmiCategory: bmiCategory
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Saved Successfully"))
+        SnackBar(content: Text("Saved Successfully"),duration: Duration(seconds: 1),)
       );
     }else{
       setState(() {
@@ -82,7 +82,7 @@ class _ProfilePageState extends State<ProfilePage> {
         bmiCategory = "Invalid Input";
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to Save Data"))
+        SnackBar(content: Text("Failed to Save Data"),duration: Duration(seconds: 1),)
       );
     }
   }

@@ -54,7 +54,7 @@ class _ResultPageState extends State<ResultPage> {
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Food entry saved successfully!')),
+        const SnackBar(content: Text('Food entry saved successfully!'),duration: Duration(seconds: 1),),
       );
 
     } catch (e) {

@@ -82,13 +82,13 @@ class _MainPageState extends State<MainPage> {
 
       if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Food Information deleted successfully")),
+          const SnackBar(content: Text("Food Information deleted successfully"),duration: Duration(seconds: 1),),
         );
       }
     }catch(e){
       if(mounted){
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Food Information deleted unsuccessfully: $e")),
+          SnackBar(content: Text("Food Information deleted unsuccessfully: $e"),duration: Duration(seconds: 1),),
         );
       }
     }
