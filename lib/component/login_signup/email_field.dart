@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-class NameField extends StatefulWidget {
+class EmailField extends StatefulWidget {
   final TextEditingController controller;
-   NameField({
+   EmailField({
      required this.controller,
      super.key
    });
 
   @override
-  State<NameField> createState() => _NameFieldState();
+  State<EmailField> createState() => _EmailFieldState();
 }
 
-class _NameFieldState extends State<NameField> {
+class _EmailFieldState extends State<EmailField> {
   @override
   Widget build(BuildContext context) {
     return TextField(

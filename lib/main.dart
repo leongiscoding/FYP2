@@ -1,3 +1,6 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fyp2/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp2/page/loginPage.dart';
 import 'package:fyp2/page/mainPage.dart';
@@ -6,9 +9,16 @@ import 'package:fyp2/page/signUpPage.dart';
 import 'package:fyp2/theme/theme.dart';
 
 void main() async{
-  runApp(
-     const MyApp(),
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: 'assets/.env');
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  runApp(const MyApp());
+
 }
 
 class MyApp extends StatelessWidget {

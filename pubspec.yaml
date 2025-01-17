@@ -40,7 +40,12 @@ dependencies:
   cupertino_icons: ^1.0.2
   google_fonts:
   tflite_flutter: ^0.11.0
-
+  firebase_core: ^3.8.1
+  firebase_auth: ^5.3.4
+  fluttertoast: ^8.2.10
+  shared_preferences: ^2.3.3
+  cloud_firestore: ^5.6.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -67,8 +72,10 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
      - assets/labels.txt
-     - assets/model.tflite
+#     - assets/model.tflite
+     - assets/model_fruit_v2.tflite
      - assets/EzScan.png
+     - assets/.env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

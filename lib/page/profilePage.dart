@@ -1,7 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/profile_page/bmi_field.dart';
 import 'package:fyp2/controller/bmi_calculator.dart';
+import 'package:fyp2/firebase/firestore_service.dart';
+import 'package:fyp2/firebase/profile_firestore_service.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -11,12 +15,50 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  //Get current/registered username
+  User? user = FirebaseAuth.instance.currentUser;
+  final ProfileFireStoreService _fireStoreService = ProfileFireStoreService();
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   double bmi = 0;
   String bmiCategory = "";
 
-  void calculateAndShowBMI(){
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadBMIFromFireStore();
+  }
+
+  // Load BMI and Category from Shared Preferences
+  Future<void> loadBMIFromFireStore() async {
+    try {
+      final data = await _fireStoreService.loadBMIFromFireStore();
+      if (data != null) {
+        setState(() {
+          bmi = data['bmi'] ?? 0;
+          bmiCategory = data['bmiCategory'] ?? "No BMI Calculated";
+          heightController.text = data['height']?.toString() ?? '';
+          weightController.text = data['weight']?.toString() ?? '';
+        });
+      } else {
+        setState(() {
+          bmi = 0;
+          bmiCategory = "No Data Found";
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading BMI data: $e")),
+      );
+    }
+  }
+
+
+
+
+  // call calculation from bmi_calculator.dart
+  Future<void> saveBMIToFireStore() async{
     double height = double.tryParse(heightController.text) ?? 0;
     double weight = double.tryParse(weightController.text) ?? 0;
 
@@ -25,13 +67,26 @@ class _ProfilePageState extends State<ProfilePage> {
         bmi = calculateBMI(height, weight);
         bmiCategory = getBMICategory(bmi);
       });
+      await _fireStoreService.saveBMIToFireStore(
+          height: height,
+          weight: weight,
+          bmi: bmi,
+          bmiCategory: bmiCategory
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Saved Successfully"),duration: Duration(seconds: 1),)
+      );
     }else{
       setState(() {
         bmi = 0;
         bmiCategory = "Invalid Input";
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to Save Data"),duration: Duration(seconds: 1),)
+      );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,11 +109,25 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //DUMMY NAME, THIS SHOULD REFER TO FIREBASE AUTH DATA
+            //Username information
             Padding(
               padding: const EdgeInsets.only(left: 10.0),
               child: Text(
-                "Name : Bob",
+                // read username from firebase
+                "Name: ${user?.displayName ?? 'User unknown'}",
+                style: GoogleFonts.dmSerifText(
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+            ),
+
+            //Email Information
+            Padding(
+              padding: const EdgeInsets.only(left: 10.0),
+              child: Text(
+                //read email from firebase
+               "Email: ${FirebaseAuth.instance.currentUser!.email!.toString()}",
                 style: GoogleFonts.dmSerifText(
                   fontSize: 18,
                   color: Theme.of(context).colorScheme.secondary,
@@ -84,35 +153,19 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                //CALCULATE BMI
+                //CALCULATE BMI and Save
                 ElevatedButton(
-                    onPressed: calculateAndShowBMI,
+                    onPressed: saveBMIToFireStore,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Theme.of(context).colorScheme.inversePrimary,
                     ),
                     child: Text(
-                        "Calculate BMI",
+                        "Calculate and Save BMI",
                       style: GoogleFonts.dmSerifText(
                         fontSize: 14,
                       ),
                     ),
-                ),
-
-                //SAVE TO DB
-                ElevatedButton(
-                  //THIS SHOULD SAVE bmi AND bmiCategory
-                  onPressed: (){},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  ),
-                  child: Text(
-                      "Save",
-                    style: GoogleFonts.dmSerifText(
-                      fontSize: 14,
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -125,14 +178,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "BMI: ${bmi.toStringAsFixed(1)}",
+                    "BMI: ${bmi > 0 ? bmi.toStringAsFixed(1): 'Not Calculated'}",
                     style:  GoogleFonts.dmSerifText(
                       fontSize: 18,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                   Text(
-                    bmiCategory,
+                    bmiCategory.isNotEmpty ? bmiCategory: 'No BMI Category',
                     style:  GoogleFonts.dmSerifText(
                       fontSize: 18,
                       color: Theme.of(context).colorScheme.secondary,

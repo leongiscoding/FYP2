@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fyp2/component/login_signup/logo_widget.dart';
 import 'package:fyp2/component/main_page/drawer_tile.dart';
+import 'package:fyp2/firebase/auth_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -48,9 +49,8 @@ class MyDrawer extends StatelessWidget {
           DrawerTile(
               title: "Log Out",
               leading: const Icon(Icons.logout,color: Colors.white,),
-              onTap: (){
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/loginPage");
+              onTap: ()async{
+                await AuthService().signOut(context: context);
               },
           ),
         ],

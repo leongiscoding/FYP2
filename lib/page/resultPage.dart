@@ -1,18 +1,76 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fyp2/firebase/firestore_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ResultPage extends StatelessWidget {
+class ResultPage extends StatefulWidget {
   final String imagePath;
-  final String fruitName;
+  final String foodName;
   final String calories;
 
   const ResultPage({
     super.key,
     required this.imagePath,
-    required this.fruitName,
+    required this.foodName,
     required this.calories,
   });
+
+  @override
+  State<ResultPage> createState() => _ResultPageState();
+}
+
+class _ResultPageState extends State<ResultPage> {
+
+  Future<void> _saveFoodInformation() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please login to save food entries')),
+        );
+        return;
+      }
+
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      final firestoreService = FireStoreService();
+      await firestoreService.addFoodEntry(
+        userId: user.uid,
+        imagePath: widget.imagePath,
+        foodName: widget.foodName,
+        calories: widget.calories,
+      );
+
+      // Remove loading indicator
+      Navigator.pop(context);
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Food entry saved successfully!'),duration: Duration(seconds: 1),),
+      );
+
+    } catch (e) {
+      // Remove loading indicator if it's showing
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving food entry: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +110,7 @@ class ResultPage extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16.0), // Round image corners
                       child: Image.file(
-                        File(imagePath),
+                        File(widget.imagePath),
                         height: 200,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -61,7 +119,7 @@ class ResultPage extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     Text(
-                      'Fruit: $fruitName',
+                      'Food: ${widget.foodName}',
                       style: GoogleFonts.dmSerifText(
                         textStyle: TextStyle(
                           fontSize: 20,
@@ -73,7 +131,7 @@ class ResultPage extends StatelessWidget {
                     const SizedBox(height: 10),
 
                     Text(
-                      'Calories: $calories',
+                      'Calories: ${widget.calories}',
                       style: GoogleFonts.dmSerifText(
                         textStyle: TextStyle(
                           fontSize: 18,
@@ -97,9 +155,7 @@ class ResultPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16), // Rounded button
                 ),
               ),
-              onPressed: () {
-                // IMPLEMENT LOGIC FOR SAVE INFORMATION
-              },
+              onPressed: _saveFoodInformation,
               child: Text(
                 "Save Information",
                 style: GoogleFonts.dmSerifText(
